@@ -1,0 +1,30 @@
+{
+  "name": "phaser-typescript-boilerplate",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chriteixeira/phaser-typescript-boilerplate.git"
+  },
+  "author": "Christiano Teixeira",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chriteixeira/phaser-typescript-boilerplate/issues"
+  },
+  "homepage": "https://github.com/chriteixeira/phaser-typescript-boilerplate#readme",
+  "dependencies": {
+    "browserify": "^13.1.0",
+    "lodash": "^4.14.1",
+    "phaser": "^2.6.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.14.0",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.13.6"
+  }
+}
