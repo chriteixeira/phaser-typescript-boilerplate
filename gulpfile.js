@@ -1,53 +1,65 @@
 var gulp = require('gulp');
 var ts = require('gulp-typescript');
-var typescript = require('typescript');
+var clean = require('gulp-clean');
 var sourcemaps = require('gulp-sourcemaps');
+var typescript = require('typescript');
 var browserSync = require('browser-sync').create();
-var reload      = browserSync.reload;
+var reload = browserSync.reload;
 
-var paths = {
-	browsersync: {
-		basedir: '.'
-	},
-	tscripts: {
-		src: ['src/**/*.ts'],
-		dest: 'build'
-	},
-	htmlfiles: {
-		src: ['*.html']
-	}
-};
+const SOURCE_FOLDER = './src';
+const BUILD_FOLDER = './build';
+const ASSETS_FOLDER = './assets';
+const PHASER_PATH = './node_modules/phaser/build/phaser.js';
 
-gulp.task('default', ['serve']);
+// Clear the build folder
+gulp.task('clean', function(){
+    gulp.src(BUILD_FOLDER, {force: true})
+        .pipe(clean());
+});
 
-gulp.task('compile-ts', function(){
+// Copy all the assets to the build folder
+gulp.task('copyAssets', function(){
+    gulp.src(ASSETS_FOLDER+'/**/*.*').pipe(
+        gulp.dest(BUILD_FOLDER));
+});
+
+// Copy phaser dependencies to the build folder
+gulp.task('copyPhaser', function(){
+    gulp.src(PHASER_PATH).pipe(
+        gulp.dest(BUILD_FOLDER+'/js'));
+});
+
+// Compile the typescript files under the source folders. The compilation will be based on the tsconfig.json
+gulp.task('compile', function () {
     var tsProject = ts.createProject('tsconfig.json', {
-		typescript: typescript
-	});
-    return gulp.src('./src/**/*.ts')
-            .pipe(ts(tsProject))
-            .pipe(sourcemaps.write('../maps', { includeContent: false, sourceRoot: '/scripts/src' }))
-            .pipe(gulp.dest('./build'))
-            .pipe(reload({stream:true}));
+        typescript: typescript
+    });
+    return gulp.src(SOURCE_FOLDER+'/**/*.ts')
+        .pipe(ts(tsProject))
+        .pipe(sourcemaps.write('../maps', { includeContent: false, sourceRoot: '/scripts/src' }))
+        .pipe(gulp.dest(BUILD_FOLDER+'/js'))
+        .pipe(reload({ stream: true }));
 });
 
-gulp.task('watch', function() {
-	gulp.watch('./src/**/*.ts', ['compile-ts']);
+// Watch for TS changes and compile it again
+gulp.task('watch-ts',['compile'], function () {
+    browserSync.reload();
 });
 
-gulp.task('browser-sync', function() {
+//Watch for assets cahnges and copy it again to the build folder
+gulp.task('watch-assets',['copyAssets'], function () {
+    browserSync.reload();
+});
+
+gulp.task('serve', function() {
     browserSync.init({
         server: {
-            baseDir: paths.browsersync.basedir
+            baseDir: BUILD_FOLDER+'/'
         }
     });
+    gulp.watch(SOURCE_FOLDER+'/**/*.ts', ['watch-ts']);
+    gulp.watch(ASSETS_FOLDER+'/**/*.*', ['watch-assets']);
 });
 
-gulp.task('serve', ['browser-sync'], function() {
-
-	// watch html files - do a complete reload for all browsers
-    gulp.watch(paths.htmlfiles.src).on('change', browserSync.reload);
-
-    // Watch .ts files - inject changes
-    gulp.watch(paths.tscripts.src, ['compile-ts']);
-});
+gulp.task('copy', ['copyPhaser','copyAssets']);
+gulp.task('build', ['copy','compile']);
